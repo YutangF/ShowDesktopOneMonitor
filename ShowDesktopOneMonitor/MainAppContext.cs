@@ -15,7 +15,7 @@ namespace ShowDesktopOneMonitor
         private NotifyIcon trayIcon = null;
         private List<DesktopWindowID>[] PrevStateByScreen = new List<DesktopWindowID>[0];
 
-        private bool[] keyComb = new bool[3]; // buffer for Win + Shift + D
+        private bool[] keyComb = new bool[2]; // buffer for Win + D
         private GlobalKeyboardHook globalKeyboardHook;
 
         public MainAppContext ()
@@ -42,23 +42,22 @@ namespace ShowDesktopOneMonitor
         {
             var key = (Keys)e.KeyboardData.VirtualCode;
 
-            if (key == Keys.LWin) {
+            if (key == Keys.LWin || key == Keys.RWin) {
                 keyComb[0] = e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown;
                 if (keyComb[0]) {
-                    keyComb[1] = keyComb[2] = false;
+                    keyComb[1] = false;
                 }
             }
-            else if (key == Keys.LShiftKey && keyComb[0] == true) {
+            else if (key == Keys.D && keyComb[0] == true) {
                 keyComb[1] = e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown;
-                if (keyComb[1]) {
-                    keyComb[2] = false;
-                }
             }
-            else if (key == Keys.D && keyComb[0] == true && keyComb[1] == true) {
-                keyComb[2] = e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown;
+            else
+            {
+                keyComb[0] = false;
+                keyComb[1] = false;
             }
-            
-            bool trigger = keyComb.All(x => x == true);
+
+            bool trigger = keyComb[0] && keyComb[1];
             if (trigger) {
                 OnShowDesktopKeyComb();
                 e.Handled = true;
